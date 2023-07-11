@@ -1,0 +1,20 @@
+- headers:
+    user-agent: fetch-synthetic-monitor
+  name: fetch.com index page
+  url: http://localhost:8000/
+
+- headers:
+    user-agent: fetch-synthetic-monitor
+  name: fetch.com careers page
+  url: http://localhost:8000/careers
+
+- body: '{"foo":"bar"}'
+  headers:
+    content-type: application/json
+    user-agent: fetch-synthetic-monitor
+  method: POST
+  name: fetch.com some post endpoint
+  url: http://localhost:8000/some/post/endpoint
+
+- name: www.fetchrewards.com index page
+  url: https://www.fetchrewards.com/

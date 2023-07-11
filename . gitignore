@@ -1,0 +1,42 @@
+# Python virtual environment
+venv/
+.venv/
+
+# Compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# Test cache
+.pytest_cache/
+
+# IDE specific files and directories
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Log files
+*.log
+
+# Dependency directories
+lib/
+libs/
+dist/
+build/
+eggs/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Coverage output directory
+htmlcov/
+
+# Other miscellaneous files
+*.swp
+.DS_Store
