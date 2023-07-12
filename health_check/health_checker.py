@@ -3,8 +3,9 @@ import logging
 import time
 from health_check.endpoint import Endpoint
 
+
 class HealthChecker:
-    def __init__(self, file_path):
+    def __init__(self, file_path, time_interval=15):
         """
         Performs health checks on a set of HTTP endpoints.
 
@@ -17,9 +18,11 @@ class HealthChecker:
         self.availability_percentages = {}
         self.total_requests = 0
         self.test_cycle_count = 0
+        self.time_interval = time_interval
 
         # Configure logging
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
 
     def load_endpoints(self):
         """
@@ -64,7 +67,8 @@ class HealthChecker:
         Logs the availability percentages for each domain.
         """
         self.test_cycle_count += 1
-        logging.info(f"Test cycle #{self.test_cycle_count} begins at time = {self.test_cycle_count * 15} seconds:")
+        logging.info(
+            f"Test cycle #{self.test_cycle_count} begins at time = {self.test_cycle_count * 15} seconds:")
         for endpoint in self.endpoints:
             status_code, latency = endpoint.check_health()
             domain = endpoint.url.split('/')[2]
@@ -86,8 +90,10 @@ class HealthChecker:
 
         logging.info(f"Test cycle #{self.test_cycle_count} ends.")
         for domain in self.domains:
-            availability_percentage = self.calculate_availability_percentage(domain)
-            logging.info(f"{domain} has {availability_percentage}% availability percentage")
+            availability_percentage = self.calculate_availability_percentage(
+                domain)
+            logging.info(
+                f"{domain} has {availability_percentage}% availability percentage")
 
     def run_health_checks(self):
         """
@@ -96,6 +102,6 @@ class HealthChecker:
         try:
             while True:
                 self.log_availability_percentages()
-                time.sleep(15)
+                time.sleep(self.time_interval)
         except KeyboardInterrupt:
             pass

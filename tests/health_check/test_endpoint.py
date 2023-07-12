@@ -1,8 +1,8 @@
 import unittest
 import requests
 from unittest.mock import patch
-import logging
 from health_check.endpoint import Endpoint
+
 
 class TestEndpoint(unittest.TestCase):
     def test_check_health_success(self):
@@ -47,7 +47,8 @@ class TestEndpoint(unittest.TestCase):
 
         # Mock the requests.request method to raise an exception
         with patch('requests.request') as mock_request:
-            mock_request.side_effect = requests.RequestException("Request failed")
+            mock_request.side_effect = requests.RequestException(
+                "Request failed")
 
             # Call the check_health method
             status_code, latency = endpoint.check_health()
@@ -55,6 +56,7 @@ class TestEndpoint(unittest.TestCase):
             # Assert that None values are returned
             self.assertIsNone(status_code)
             self.assertIsNone(latency)
+
 
 if __name__ == '__main__':
     unittest.main()

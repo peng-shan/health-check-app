@@ -1,6 +1,7 @@
 import requests
 import logging
 
+
 class Endpoint:
     def __init__(self, name, url, method='GET', headers=None, body=None):
         """

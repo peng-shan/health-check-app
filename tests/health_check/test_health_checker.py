@@ -1,9 +1,8 @@
-import logging
 import unittest
-from unittest import mock
 import yaml
 from unittest.mock import patch, mock_open
 from health_check.health_checker import HealthChecker, Endpoint
+
 
 class TestHealthChecker(unittest.TestCase):
     @patch('builtins.open', mock_open(read_data=yaml.dump([
@@ -34,13 +33,13 @@ class TestHealthChecker(unittest.TestCase):
             'fetchrewards.com': {'total': 5, 'up': 3}
         }
 
-        availability_percentage = health_checker.calculate_availability_percentage('example.com')
+        availability_percentage = health_checker.calculate_availability_percentage(
+            'example.com')
         self.assertEqual(availability_percentage, 70)
 
-        availability_percentage = health_checker.calculate_availability_percentage('fetchrewards.com')
+        availability_percentage = health_checker.calculate_availability_percentage(
+            'fetchrewards.com')
         self.assertEqual(availability_percentage, 60)
-
-
 
     @patch('builtins.open', mock_open(read_data=yaml.dump([
         {
@@ -62,7 +61,8 @@ class TestHealthChecker(unittest.TestCase):
             health_checker.log_availability_percentages()
 
             # Verify that the availability percentages are calculated correctly
-            availability_percentage = health_checker.calculate_availability_percentage('example.com')
+            availability_percentage = health_checker.calculate_availability_percentage(
+                'example.com')
             self.assertEqual(availability_percentage, 100)
 
             # Reset the mock
@@ -75,11 +75,13 @@ class TestHealthChecker(unittest.TestCase):
             health_checker.log_availability_percentages()
 
             # Verify that the availability percentages are updated correctly
-            availability_percentage = health_checker.calculate_availability_percentage('example.com')
+            availability_percentage = health_checker.calculate_availability_percentage(
+                'example.com')
             self.assertEqual(availability_percentage, 50)
 
         # Verify that the total requests count is incremented
-        self.assertEqual(health_checker.availability_percentages['example.com']['total'], 2)
+        self.assertEqual(
+            health_checker.availability_percentages['example.com']['total'], 2)
 
 
 if __name__ == '__main__':
