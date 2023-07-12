@@ -1,3 +1,6 @@
+# this app is for testing health check app
+# it will start a server on port 8000, provide 3 endpoints for testing purpose
+
 from flask import Flask, jsonify
 
 app = Flask(__name__)

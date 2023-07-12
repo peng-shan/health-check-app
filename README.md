@@ -18,11 +18,6 @@ pip install -r requirements.txt
 
 1. Start the Flask application:
 
-
-## Usage
-
-1. Start the Flask application:
-
 python app.py
 
 
@@ -39,6 +34,14 @@ Enter the path to the YAML configuration file: endpoints.yaml
 4. The health checker will start sending requests to the endpoints and calculate the availability percentages. The results will be logged to the console.
 
 5. To stop the health checker, press `Ctrl+C`.
+
+## Testing
+
+To run the unit tests, use the following command:
+
+pytest
+
+
 
 ## Customization
 

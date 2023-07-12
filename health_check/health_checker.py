@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import yaml
 import logging
 import time
@@ -62,32 +63,42 @@ class HealthChecker:
             return 0
         return round((up_count / total_count) * 100)
 
+    def send_health_check_requests(self):
+        """
+        Sends health check requests to the endpoints using multiple threads.
+        """
+        self.test_cycle_count += 1
+        logging.info(f"Test cycle #{self.test_cycle_count} begins at time = {self.test_cycle_count * 15} seconds:")
+
+        with ThreadPoolExecutor() as executor:
+            futures = []
+            for endpoint in self.endpoints:
+                future = executor.submit(endpoint.check_health)
+                futures.append(future)
+
+            for future, endpoint in zip(futures, self.endpoints):
+                status_code, latency = future.result()
+                domain = endpoint.url.split('/')[2]
+                self.availability_percentages[domain]['total'] += 1
+
+                if status_code and latency is not None:
+                    if 200 <= status_code < 300 and latency < 500:
+                        self.availability_percentages[domain]['up'] += 1
+                        result = "UP"
+                    else:
+                        result = "DOWN"
+                else:
+                    result = "DOWN"
+
+                logging.info(
+                    f"Endpoint with name {endpoint.name} has HTTP response code {status_code} and "
+                    f"response latency {latency} ms => {result}"
+                )
+
     def log_availability_percentages(self):
         """
         Logs the availability percentages for each domain.
         """
-        self.test_cycle_count += 1
-        logging.info(
-            f"Test cycle #{self.test_cycle_count} begins at time = {self.test_cycle_count * 15} seconds:")
-        for endpoint in self.endpoints:
-            status_code, latency = endpoint.check_health()
-            domain = endpoint.url.split('/')[2]
-            self.availability_percentages[domain]['total'] += 1
-
-            if status_code and latency is not None:
-                if 200 <= status_code < 300 and latency < 500:
-                    self.availability_percentages[domain]['up'] += 1
-                    result = "UP"
-                else:
-                    result = "DOWN"
-            else:
-                result = "DOWN"
-
-            logging.info(
-                f"Endpoint with name {endpoint.name} has HTTP response code {status_code} and "
-                f"response latency {latency} ms => {result}"
-            )
-
         logging.info(f"Test cycle #{self.test_cycle_count} ends.")
         for domain in self.domains:
             availability_percentage = self.calculate_availability_percentage(
@@ -101,6 +112,7 @@ class HealthChecker:
         """
         try:
             while True:
+                self.send_health_check_requests()
                 self.log_availability_percentages()
                 time.sleep(self.time_interval)
         except KeyboardInterrupt:
