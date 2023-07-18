@@ -11,19 +11,26 @@ git clone https://github.com/peng-shan/health-check-app.git
 
 2. Install the required dependencies:
 
+``` sh
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+```
 
 
 ## Usage
 
 1. Start the Flask application:
 
+``` sh
 python app.py
-
+```
 
 2. Open another terminal window and run the health checker:
 
-python main.py
+``` sh
+python health_check_app.py
+```
 
 
 3. When prompted, enter the path to the YAML configuration file (`endpoints.yaml`):
@@ -39,8 +46,9 @@ Enter the path to the YAML configuration file: endpoints.yaml
 
 To run the unit tests, use the following command:
 
+``` sh
 pytest
-
+```
 
 
 ## Customization
@@ -49,7 +57,7 @@ pytest
 
 - Adjust the code in `app.py` to customize the Flask application and add additional endpoints.
 
-- Modify the code in `main.py` to change the health check intervals or add additional functionality.
+- Modify the code in `health_check_app.py` to change the health check intervals or add additional functionality.
 
 ## Docker Support
 

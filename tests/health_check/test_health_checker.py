@@ -1,88 +1,52 @@
 import unittest
-import yaml
-from unittest.mock import patch, mock_open
-from health_check.health_checker import HealthChecker, Endpoint
-
+from unittest import mock
+from health_check.health_checker import HealthChecker
 
 class TestHealthChecker(unittest.TestCase):
-    @patch('builtins.open', mock_open(read_data=yaml.dump([
-        {
-            'name': 'Test Endpoint',
-            'url': 'http://example.com'
-        }
-    ])))
-    def test_load_endpoints_success(self):
-        health_checker = HealthChecker('endpoints.yaml')
-        health_checker.load_endpoints()
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="some_data")
+    @mock.patch('yaml.safe_load')
+    def test_load_endpoints(self, mock_yaml_load, mock_open):
+        mock_yaml_load.return_value = [
+            {'url': 'http://example.com/endpoint1', 'name': 'Endpoint1'},
+            {'url': 'http://example.com/endpoint2', 'name': 'Endpoint2'}
+        ]
+        hc = HealthChecker('fake_path.yaml')
+        hc.load_endpoints()
 
-        self.assertEqual(len(health_checker.endpoints), 1)
-        self.assertEqual(health_checker.endpoints[0].name, 'Test Endpoint')
-        self.assertEqual(health_checker.endpoints[0].url, 'http://example.com')
-
-    @patch('builtins.open', side_effect=FileNotFoundError())
-    def test_load_endpoints_file_not_found(self, mock_open):
-        health_checker = HealthChecker('nonexistent.yaml')
-
-        with self.assertRaises(SystemExit):
-            health_checker.load_endpoints()
+        mock_open.assert_called_once_with('fake_path.yaml', 'r')
+        mock_yaml_load.assert_called_once()
+        self.assertEqual(len(hc.endpoints), 2)
+        self.assertEqual(hc.domains, {'example.com'})
+        self.assertEqual(hc.availability_percentages, {'example.com': {'total': 0, 'up': 0}})
 
     def test_calculate_availability_percentage(self):
-        health_checker = HealthChecker('endpoints.yaml')
-        health_checker.availability_percentages = {
-            'example.com': {'total': 10, 'up': 7},
-            'fetchrewards.com': {'total': 5, 'up': 3}
+        hc = HealthChecker('fake_path.yaml')
+        hc.availability_percentages = {
+            'example.com': {
+                'total': 100,
+                'up': 50
+            }
         }
+        percentage = hc.calculate_availability_percentage('example.com')
+        self.assertEqual(percentage, 50)
 
-        availability_percentage = health_checker.calculate_availability_percentage(
-            'example.com')
-        self.assertEqual(availability_percentage, 70)
+    @mock.patch('concurrent.futures.ThreadPoolExecutor')
+    def test_send_health_check_requests(self, mock_executor):
+        mock_future = mock.Mock()
+        mock_executor.return_value.__enter__.return_value.submit.return_value = mock_future
+        mock_future.result.return_value = (200, 400)
+        mock_endpoint = mock.Mock()
+        mock_endpoint.check_health.return_value = (200, 400)
+        mock_endpoint.url = 'http://example.com/endpoint1'
+        mock_endpoint.name = 'Endpoint1'
 
-        availability_percentage = health_checker.calculate_availability_percentage(
-            'fetchrewards.com')
-        self.assertEqual(availability_percentage, 60)
+        hc = HealthChecker('fake_path.yaml')
+        hc.endpoints = [mock_endpoint]
+        hc.availability_percentages = {'example.com': {'total': 0, 'up': 0}}
 
-    @patch('builtins.open', mock_open(read_data=yaml.dump([
-        {
-            'name': 'Test Endpoint',
-            'url': 'http://example.com'
-        }
-    ])))
-    def test_log_availability_percentages(self):
-        # Create a HealthChecker instance and load endpoints
-        health_checker = HealthChecker('endpoints.yaml')
-        health_checker.load_endpoints()
+        hc.send_health_check_requests()
 
-        # Mock the check_health method of Endpoint to return a specific status code and latency
-        with patch.object(Endpoint, 'check_health') as mock_check_health:
-            # Mock the first endpoint's check_health method
-            mock_check_health.return_value = 200, 300
-
-            # Call the log_availability_percentages method
-            health_checker.log_availability_percentages()
-
-            # Verify that the availability percentages are calculated correctly
-            availability_percentage = health_checker.calculate_availability_percentage(
-                'example.com')
-            self.assertEqual(availability_percentage, 100)
-
-            # Reset the mock
-            mock_check_health.reset_mock()
-
-            # Mock the first endpoint's check_health method to return different values
-            mock_check_health.return_value = 500, 1000
-
-            # Call the log_availability_percentages method again
-            health_checker.log_availability_percentages()
-
-            # Verify that the availability percentages are updated correctly
-            availability_percentage = health_checker.calculate_availability_percentage(
-                'example.com')
-            self.assertEqual(availability_percentage, 50)
-
-        # Verify that the total requests count is incremented
-        self.assertEqual(
-            health_checker.availability_percentages['example.com']['total'], 2)
-
+        self.assertEqual(hc.availability_percentages, {'example.com': {'total': 1, 'up': 1}})
 
 if __name__ == '__main__':
     unittest.main()
