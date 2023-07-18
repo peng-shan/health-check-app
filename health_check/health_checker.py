@@ -95,6 +95,7 @@ class HealthChecker:
                     f"response latency {latency} ms => {result}"
                 )
 
+
     def log_availability_percentages(self):
         """
         Logs the availability percentages for each domain.

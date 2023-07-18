@@ -6,13 +6,14 @@ This project implements a program to check the health of a set of HTTP endpoints
 
 1. Clone the repository:
 
+``` sh
 git clone https://github.com/peng-shan/health-check-app.git
-
+```
 
 2. Install the required dependencies:
 
 ``` sh
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -65,12 +66,15 @@ Alternatively, you can use Docker to run the application:
 
 1. Build the Docker image:
 
+``` sh
 docker build -t endpoint-checker .
+```
 
 2. Run the Docker container:
 
+``` sh
 docker run -it --rm endpoint-checker
-
+```
 
 3. Follow the prompts to provide the path to the YAML configuration file.
 
